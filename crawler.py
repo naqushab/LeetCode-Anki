@@ -87,9 +87,8 @@ class LeetCodeCrawler:
                     do(self.fetch_problem, args=[slug, True])
                     # fetch solution
                     do(self.fetch_solution, args=[slug])
-
-                # always try to update submission
-                do(self.fetch_submission, args=[slug])
+                    # always try to update submission
+                    do(self.fetch_submission, args=[slug])
         print(f"🤖 Updated {counter} problems")
 
     def fetch_problem(self, slug, accepted=False):
@@ -162,7 +161,7 @@ class LeetCodeCrawler:
                 tag=item['slug']
             ).execute()
 
-        random_wait(10, 15)
+        random_wait(2, 8)
 
     def fetch_solution(self, slug):
         print(f"🤖 Fetching solution for problem: {slug}")
@@ -212,7 +211,7 @@ class LeetCodeCrawler:
                 url=f"https://leetcode.com/articles/{slug}/",
                 content=solution['solution']['content']
             ).execute()
-        random_wait(10, 15)
+        random_wait(2, 8)
 
     def fetch_submission(self, slug):
         print(f"🤖 Fetching submission for problem: {slug}")
@@ -272,7 +271,7 @@ class LeetCodeCrawler:
                         ).execute()
                     else:
                         raise Exception(f"Cannot get submission code for problem: {slug}")
-        random_wait(10, 15)
+        random_wait(2, 8)
 
 
 if __name__ == '__main__':
