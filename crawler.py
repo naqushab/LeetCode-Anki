@@ -10,7 +10,7 @@ from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 
 from database import Problem, ProblemTag, CompanyTag, Tag, Submission, create_tables, Solution
-from utils import destructure, random_wait, do, get
+from utils import destructure, random_wait, do, get, parser
 
 COOKIE_PATH = "./cookies.dat"
 
@@ -69,9 +69,13 @@ class LeetCodeCrawler:
         self.session.cookies.update(cookies)
 
     def fetch_accepted_problems(self):
-        response = self.session.get("https://leetcode.com/api/problems/all/")
+        if parser.get("Config", "company_mode") == "True":
+            company = parser.get("Config", "company")
+            api_link = f"https://leetcode.com/api/problems/all/?companySlugs={company}"
+        else:
+            api_link = "https://leetcode.com/api/problems/all/"
+        response = self.session.get(api_link)
         all_problems = json.loads(response.content.decode('utf-8'))
-        # filter AC problems
         counter = 0
         for item in reversed(all_problems['stat_status_pairs']):
             if item:

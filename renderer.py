@@ -7,6 +7,11 @@ from markdown import markdown
 from database import Problem
 from utils import parser as conf
 
+if conf.get("Config", "company_mode") == "True":
+    card_name = conf.get("Config", "company")
+else:
+    card_name = 'Leetcode'
+
 
 def random_id():
     return random.randrange(1 << 30, 1 << 31)
@@ -39,7 +44,7 @@ def get_anki_model():
 
     anki_model = Model(
         model_id=1048217874,
-        name="LeetCode",
+        name=card_name,
         fields=[
             {"name": "ID"},
             {"name": "Title"},
@@ -55,7 +60,7 @@ def get_anki_model():
         ],
         templates=[
             {
-                "name": "LeetCode",
+                "name": card_name,
                 "qfmt": front_template,
                 "afmt": back_template
             }
@@ -113,14 +118,14 @@ def render_anki():
 
     anki_deck = Deck(
         deck_id=random_id(),
-        name="LeetCode"
+        name=card_name
     )
 
     for problem in problems:
         note = make_note(problem)
         anki_deck.add_note(note)
 
-    path = conf.get("Anki", "output")
+    path = conf.get("Anki", "output") + f'{card_name}.apkg'
     Package(anki_deck).write_to_file(path)
 
 
