@@ -44,6 +44,16 @@ class Problem(BaseModel):
         )
 
     @property
+    def company_tags(self):
+        return (
+            Tag.select().join(
+                CompanyTag, on=Tag.slug == CompanyTag.tag
+            ).where(
+                CompanyTag.problem == self.id
+            )
+        )
+
+    @property
     def solution(self):
         return (
             Solution.select().where(
@@ -87,6 +97,17 @@ class ProblemTag(BaseModel):
         )
 
 
+class CompanyTag(BaseModel):
+    problem = ForeignKeyField(Problem)
+    tag = ForeignKeyField(Tag)
+
+    class Meta:
+        indexes = (
+            # Specify a unique multi-column index on from/to-user.
+            (('problem', 'tag'), True),
+        )
+
+
 class Solution(BaseModel):
     problem = ForeignKeyField(Problem, primary_key=True)
     content = TextField()
@@ -95,7 +116,7 @@ class Solution(BaseModel):
 
 def create_tables():
     with database:
-        database.create_tables([Problem, Solution, Submission, Tag, ProblemTag])
+        database.create_tables([Problem, Solution, Submission, Tag, ProblemTag, CompanyTag])
 
 
 if __name__ == '__main__':

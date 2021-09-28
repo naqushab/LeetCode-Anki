@@ -9,7 +9,7 @@ from requests.cookies import RequestsCookieJar
 from selenium import webdriver
 from selenium.webdriver.support.ui import WebDriverWait
 
-from database import Problem, ProblemTag, Tag, Submission, create_tables, Solution
+from database import Problem, ProblemTag, CompanyTag, Tag, Submission, create_tables, Solution
 from utils import destructure, random_wait, do, get
 
 COOKIE_PATH = "./cookies.dat"
@@ -73,8 +73,8 @@ class LeetCodeCrawler:
         all_problems = json.loads(response.content.decode('utf-8'))
         # filter AC problems
         counter = 0
-        for item in all_problems['stat_status_pairs']:
-            if item['status'] == 'ac':
+        for item in reversed(all_problems['stat_status_pairs']):
+            if item:
                 id, slug = destructure(item['stat'], "question_id", "question__title_slug")
                 # only update problem if not exists
                 if Problem.get_or_none(Problem.id == id) is None:
@@ -89,7 +89,7 @@ class LeetCodeCrawler:
         print(f"🤖 Updated {counter} problems")
 
     def fetch_problem(self, slug, accepted=False):
-        print(f"🤖 Fetching problem: https://leetcode.com/problem/{slug}/...")
+        print(f"🤖 Fetching problem: https://leetcode.com/problems/{slug}/...")
         query_params = {
             'operationName': "getQuestionDetail",
             'variables': {'titleSlug': slug},
@@ -104,6 +104,11 @@ class LeetCodeCrawler:
                             stats
                             similarQuestions
                             categoryTitle
+                            companyTagStats
+                            companyTags {
+                            name
+                            slug
+                        }
                             topicTags {
                             name
                             slug
@@ -140,6 +145,19 @@ class LeetCodeCrawler:
                 problem=question['questionId'],
                 tag=item['slug']
             ).execute()
+
+        for item in question['companyTags']:
+            if Tag.get_or_none(Tag.slug == item['slug']) is None:
+                Tag.replace(
+                    name=item['name'],
+                    slug=item['slug']
+                ).execute()
+
+            CompanyTag.replace(
+                problem=question['questionId'],
+                tag=item['slug']
+            ).execute()
+
         random_wait(10, 15)
 
     def fetch_solution(self, slug):
@@ -184,7 +202,7 @@ class LeetCodeCrawler:
 
         # parse data
         solution = get(body, "data.question")
-        if solution['solution']['paidOnly'] is False:
+        if solution['solution'] and solution['solution']['content']:
             Solution.replace(
                 problem=solution['questionId'],
                 url=f"https://leetcode.com/articles/{slug}/",

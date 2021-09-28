@@ -1,8 +1,8 @@
 <script>
     function expandTags() {
         document.getElementById('hidden-tags').style.display = 'none';
-        const tags = '{{Tags}}'.split(';');
-        const tagSlugs = '{{TagSlugs}}'.split(';');
+        const tags = '{{Tags}}'.split(';').concat('{{CompanyTags}}'.split(';'));
+        const tagSlugs = '{{TagSlugs}}'.split(';').concat('{{CompanyTagSlugs}}'.split(';'));
 
         const N = tags.length;
         for (let i = 0; i < N; i++) {

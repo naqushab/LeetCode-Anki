@@ -48,6 +48,8 @@ def get_anki_model():
             {"name": "Description"},
             {"name": "Tags"},
             {"name": "TagSlugs"},
+            {"name": "CompanyTags"},
+            {"name": "CompanyTagSlugs"},
             {"name": "Solution"},
             {"name": "Submission"}
         ],
@@ -67,6 +69,8 @@ def make_note(problem):
     print(f"📓 Producing note for problem: {problem.title}...")
     tags = ";".join([t.name for t in problem.tags])
     tags_slug = ";".join([t.slug for t in problem.tags])
+    company_tags = ";".join([t.name for t in problem.company_tags])
+    company_tags_slug = ";".join([t.slug for t in problem.company_tags])
 
     try:
         solution = problem.solution.get()
@@ -90,12 +94,14 @@ def make_note(problem):
             problem.description,
             tags,
             tags_slug,
+            company_tags,
+            company_tags_slug,
             markdown_to_html(solution.content) if solution else "",
             submissions
         ],
         guid=str(problem.display_id),
         sort_field=str(problem.display_id),
-        tags=[t.slug for t in problem.tags]
+        tags=[t.slug for t in problem.tags] + [t.slug for t in problem.company_tags]
     )
     return note
 
